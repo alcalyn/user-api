@@ -1,0 +1,30 @@
+{
+    "name":         "alcalyn/user-api",
+    "license":      "MIT",
+    "type":         "library",
+    "description":  "User Api",
+    "homepage":     "https://github.com/alcalyn/user-api",
+    "keywords":     ["user-management"],
+    "authors": [
+        {
+            "name": "Julien Maulny",
+            "email": "doubjulien@hotmail.fr"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": ">=5.3",
+        "symfony/security": "~2.0",
+        "symfony/http-kernel": "~2.0",
+        "symfony/http-foundation": "~2.0",
+        "symfony/console": "~2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.8.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Alcalyn\\UserApi\\": ""
+        }
+    }
+}
