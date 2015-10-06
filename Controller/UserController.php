@@ -8,6 +8,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Alcalyn\UserApi\Exception\UserNotFoundException;
+use Alcalyn\UserApi\Exception\UserAlreadyExistsException;
 use Alcalyn\UserApi\Model\User;
 use Alcalyn\UserApi\Api\ApiInterface;
 use Alcalyn\UserApi\Mailer\MailerInterface;
@@ -115,7 +116,7 @@ class UserController
 
         try {
             $user = $this->api->createUser($username, $password);
-        } catch (DBALException $e) {
+        } catch (UserAlreadyExistsException $e) {
             throw new HttpException(
                 JsonResponse::HTTP_CONFLICT,
                 'An user with username '.$username.' already exists.',
