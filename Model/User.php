@@ -166,7 +166,6 @@ class User implements AdvancedUserInterface, \JsonSerializable
      */
     public function eraseCredentials()
     {
-        $this->passwordHash = null;
     }
 
     /**
