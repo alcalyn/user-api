@@ -4,7 +4,7 @@ namespace Alcalyn\UserApi\Model;
 
 use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 
-class User implements AdvancedUserInterface, \JsonSerializable
+class User implements AdvancedUserInterface
 {
     /**
      * @var int
@@ -314,27 +314,6 @@ class User implements AdvancedUserInterface, \JsonSerializable
         $this->dateCreated = $dateCreated;
 
         return $this;
-    }
-
-    /**
-     * @return array
-     */
-    public function jsonSerialize()
-    {
-        $roles = array();
-
-        foreach ($this->getRoles() as $role) {
-            $roles []= is_string($role) ? $role : $role->getRole();
-        }
-
-        return array(
-            'id' => $this->getId(),
-            'username' => $this->getUsername(),
-            'roles' => $roles,
-            'enabled' => $this->getEnabled(),
-            'salt' => $this->getSalt(),
-            'date_created' => $this->getDateCreated(),
-        );
     }
 
     /**

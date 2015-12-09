@@ -5,14 +5,12 @@ namespace Alcalyn\UserApi\Controller;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Alcalyn\UserApi\Exception\UserNotFoundException;
 use Alcalyn\UserApi\Exception\UserAlreadyExistsException;
 use Alcalyn\UserApi\Model\User;
 use Alcalyn\UserApi\Api\ApiInterface;
-use Alcalyn\UserApi\Mailer\MailerInterface;
-use Alcalyn\UserApi\Mailer\NullMailer;
 
 class UserController
 {
@@ -29,31 +27,11 @@ class UserController
     protected $loggedUser;
 
     /**
-     * @var MailerInterface
-     */
-    private $mailer;
-
-    /**
      * @param ApiInterface $api
      */
     public function __construct(ApiInterface $api)
     {
         $this->api = $api;
-        $this->mailer = new NullMailer();
-    }
-
-    /**
-     * Optional dependency injection to mailer.
-     *
-     * @param MailerInterface $mailer
-     *
-     * @return UserManager
-     */
-    public function setMailer(MailerInterface $mailer)
-    {
-        $this->mailer = $mailer;
-
-        return $this;
     }
 
     /**
@@ -70,17 +48,15 @@ class UserController
     }
 
     /**
-     * @return JsonResponse
+     * @return User[]
      */
     public function getUsers()
     {
-        $users = $this->api->getUsers();
-
-        return new JsonResponse($users);
+        return $this->api->getUsers();
     }
 
     /**
-     * @return JsonResponse
+     * @return User
      */
     public function getUser($username)
     {
@@ -90,7 +66,7 @@ class UserController
             throw new NotFoundHttpException('User '.$username.' not found.');
         }
 
-        return new JsonResponse($user);
+        return $user;
     }
 
     /**
@@ -99,7 +75,7 @@ class UserController
      *
      * @param Request $request
      *
-     * @return JsonResponse
+     * @return User created user.
      */
     public function postUser(Request $request)
     {
@@ -107,24 +83,20 @@ class UserController
         $password = $request->request->get('password');
 
         if (empty($username)) {
-            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, 'Username cannot be empty.');
+            throw new BadRequestHttpException('Username cannot be empty.');
         }
 
         if (empty($password)) {
-            throw new HttpException(JsonResponse::HTTP_BAD_REQUEST, 'Password cannot be empty.');
+            throw new BadRequestHttpException('Password cannot be empty.');
         }
 
         try {
             $user = $this->api->createUser($username, $password);
         } catch (UserAlreadyExistsException $e) {
-            throw new HttpException(
-                JsonResponse::HTTP_CONFLICT,
-                'An user with username '.$username.' already exists.',
-                $e
-            );
+            throw new ConflictHttpException('An user with username "'.$username.'" already exists.', $e);
         }
 
-        return new JsonResponse($user, JsonResponse::HTTP_CREATED);
+        return $user;
     }
 
     /**
@@ -132,6 +104,10 @@ class UserController
      * Needs to be logged.
      *
      * @param Request $request
+     *
+     * @return bool
+     *
+     * @throws HttpException if no logged user.
      */
     public function changePassword(Request $request)
     {
@@ -141,15 +117,13 @@ class UserController
 
         $this->api->changePassword($this->loggedUser, $newPassword);
 
-        $this->mailer->sendPasswordChanged($this->loggedUser);
-
-        return new JsonResponse();
+        return true;
     }
 
     /**
      * @param string $emailVerificationToken
      *
-     * @return JsonReponse
+     * @return bool
      *
      * @throws BadRequestHttpException on invalid email verification token
      */
@@ -161,7 +135,7 @@ class UserController
             throw new BadRequestHttpException('Invalid email verification token.');
         }
 
-        return new JsonReponse('Email successfully verified.');
+        return true;
     }
 
     /**
@@ -170,7 +144,7 @@ class UserController
      *
      * @param string $username
      *
-     * @return JsonResponse
+     * @return bool
      *
      * @throws NotFoundHttpException if user does not exists.
      */
@@ -182,23 +156,21 @@ class UserController
             throw new NotFoundHttpException('Delete action failed: user '.$username.' not found.', $e);
         }
 
-        return new JsonResponse();
+        return true;
     }
 
     /**
-     * @return JsonResponse
+     * @return int
      */
     public function countUsers()
     {
-        $count = $this->api->countUsers();
-
-        return new JsonResponse($count);
+        return $this->api->countUsers();
     }
 
     /**
      * Returns authenticated user.
      *
-     * @return JsonResponse
+     * @return User
      *
      * @throws HttpException if no logged user.
      */
@@ -206,7 +178,7 @@ class UserController
     {
         $this->mustBeLogged();
 
-        return new JsonResponse($this->loggedUser);
+        return $this->loggedUser;
     }
 
     /**
@@ -215,7 +187,7 @@ class UserController
     private function mustBeLogged()
     {
         if (null === $this->loggedUser) {
-            throw new HttpException(JsonResponse::HTTP_UNAUTHORIZED);
+            throw new HttpException(401);
         }
     }
 }
