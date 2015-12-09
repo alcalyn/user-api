@@ -2,8 +2,8 @@
 
 namespace Alcalyn\UserApi\Controller;
 
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpFoundation\Request;
@@ -107,7 +107,7 @@ class UserController
      *
      * @return bool
      *
-     * @throws UnauthorizedHttpException if no logged user.
+     * @throws HttpException if no logged user.
      */
     public function changePassword(Request $request)
     {
@@ -172,7 +172,7 @@ class UserController
      *
      * @return User
      *
-     * @throws UnauthorizedHttpException if no logged user.
+     * @throws HttpException if no logged user.
      */
     public function authMe()
     {
@@ -182,12 +182,12 @@ class UserController
     }
 
     /**
-     * @throws UnauthorizedHttpException
+     * @throws HttpException
      */
     private function mustBeLogged()
     {
         if (null === $this->loggedUser) {
-            throw new UnauthorizedHttpException();
+            throw new HttpException(401);
         }
     }
 }
