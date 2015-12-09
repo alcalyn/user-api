@@ -33,3 +33,7 @@ Alcalyn\UserApi\Model\User:
             exclude: true
         dateCreated:
             type: DateTime
+    virtual_properties:
+        getRoles:
+            type: array<Symfony\Component\Security\Core\Role\Role>
+            serialized_name: roles
