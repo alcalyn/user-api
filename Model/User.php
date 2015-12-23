@@ -86,6 +86,18 @@ class User implements AdvancedUserInterface
     }
 
     /**
+     * @param int $id
+     *
+     * @return self
+     */
+    public function setId($id)
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
      * {@inheritDoc}
      */
     public function getUsername()
