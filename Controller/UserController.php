@@ -7,6 +7,8 @@ use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\ConflictHttpException;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Alcalyn\SerializableApiResponse\ApiResponse;
 use Alcalyn\UserApi\Exception\UserNotFoundException;
 use Alcalyn\UserApi\Exception\UserAlreadyExistsException;
 use Alcalyn\UserApi\Model\User;
@@ -38,7 +40,7 @@ class UserController
 
      * @param User $loggedUser
      *
-     * @return UserController
+     * @return self
      */
     public function setLoggedUser(User $loggedUser)
     {
@@ -52,11 +54,11 @@ class UserController
      */
     public function getUsers()
     {
-        return $this->api->getUsers();
+        return new ApiResponse($this->api->getUsers());
     }
 
     /**
-     * @return User
+     * @return ApiResponse
      */
     public function getUser($username)
     {
@@ -66,7 +68,7 @@ class UserController
             throw new NotFoundHttpException('User '.$username.' not found.');
         }
 
-        return $user;
+        return new ApiResponse($user);
     }
 
     /**
@@ -75,7 +77,7 @@ class UserController
      *
      * @param Request $request
      *
-     * @return User created user.
+     * @return ApiResponse
      */
     public function postUser(Request $request)
     {
@@ -96,7 +98,7 @@ class UserController
             throw new ConflictHttpException('An user with username "'.$username.'" already exists.', $e);
         }
 
-        return $user;
+        return new ApiResponse($user, Response::HTTP_CREATED);
     }
 
     /**
@@ -105,7 +107,7 @@ class UserController
      *
      * @param Request $request
      *
-     * @return bool
+     * @return ApiResponse
      *
      * @throws HttpException if no logged user.
      */
@@ -117,13 +119,13 @@ class UserController
 
         $this->api->changePassword($this->loggedUser, $newPassword);
 
-        return true;
+        return new ApiResponse(true);
     }
 
     /**
      * @param string $emailVerificationToken
      *
-     * @return bool
+     * @return ApiResponse
      *
      * @throws BadRequestHttpException on invalid email verification token
      */
@@ -135,7 +137,7 @@ class UserController
             throw new BadRequestHttpException('Invalid email verification token.');
         }
 
-        return true;
+        return new ApiResponse(true);
     }
 
     /**
@@ -144,7 +146,7 @@ class UserController
      *
      * @param string $username
      *
-     * @return bool
+     * @return ApiResponse
      *
      * @throws NotFoundHttpException if user does not exists.
      */
@@ -156,21 +158,21 @@ class UserController
             throw new NotFoundHttpException('Delete action failed: user '.$username.' not found.', $e);
         }
 
-        return true;
+        return new ApiResponse(true);
     }
 
     /**
-     * @return int
+     * @return ApiResponse
      */
     public function countUsers()
     {
-        return $this->api->countUsers();
+        return new ApiResponse($this->api->countUsers());
     }
 
     /**
      * Returns authenticated user.
      *
-     * @return User
+     * @return ApiResponse
      *
      * @throws HttpException if no logged user.
      */
@@ -178,7 +180,7 @@ class UserController
     {
         $this->mustBeLogged();
 
-        return $this->loggedUser;
+        return new ApiResponse($this->loggedUser);
     }
 
     /**
